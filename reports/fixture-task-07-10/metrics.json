@@ -1,0 +1,78 @@
+{
+  "run_id": "fixture-task-07-10",
+  "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
+  "status": "valid",
+  "split": "holdout",
+  "scenario": "S0_main",
+  "seed": 2001,
+  "incident_count": 6,
+  "profile_count": 3,
+  "model_assumption": "Idealized TTL model: no infrastructure loss and H <= TTL.",
+  "policies": {
+    "baseline-S0_main-dev1001-B810": {
+      "valid": true,
+      "invalid_reasons": [],
+      "coverage_total": 0.5,
+      "coverage_by_profile": {
+        "curated_business": 0.0,
+        "raw_ingest": 0.75,
+        "training_dataset": 0.0
+      },
+      "recoverable": 3,
+      "total": 6,
+      "coverage_logical_only": 0.6,
+      "coverage_infra_loss": 0.0,
+      "cost_gb": 810,
+      "budget_gb": 810,
+      "budget_remaining_gb": 0,
+      "budget_violations": 0,
+      "min_ttl_violations": 0,
+      "ttl_days": {
+        "raw_ingest": 30,
+        "curated_business": 30,
+        "training_dataset": 30
+      },
+      "failure_counts": {
+        "infrastructure_lost": 1,
+        "ttl_expired": 2
+      }
+    },
+    "optimized-S0_main-dev1001-B810": {
+      "valid": true,
+      "invalid_reasons": [],
+      "coverage_total": 0.8333333333333334,
+      "coverage_by_profile": {
+        "curated_business": 1.0,
+        "raw_ingest": 0.75,
+        "training_dataset": 1.0
+      },
+      "recoverable": 5,
+      "total": 6,
+      "coverage_logical_only": 1.0,
+      "coverage_infra_loss": 0.0,
+      "cost_gb": 760,
+      "budget_gb": 810,
+      "budget_remaining_gb": 50,
+      "budget_violations": 0,
+      "min_ttl_violations": 0,
+      "ttl_days": {
+        "raw_ingest": 14,
+        "curated_business": 60,
+        "training_dataset": 90
+      },
+      "failure_counts": {
+        "infrastructure_lost": 1,
+        "ttl_expired": 0
+      }
+    }
+  },
+  "paired": {
+    "baseline_policy_id": "baseline-S0_main-dev1001-B810",
+    "optimized_policy_id": "optimized-S0_main-dev1001-B810",
+    "delta_pp": 33.333333333333336
+  },
+  "aggregate": null,
+  "failure_cases": [
+    "Infrastructure loss is never recoverable without an independent backup."
+  ]
+}

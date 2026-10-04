@@ -1,0 +1,17 @@
+{
+  "policy_id": "baseline-S0_main-dev1001-B810",
+  "kind": "baseline_uniform",
+  "ttl_days": {
+    "raw_ingest": 30,
+    "curated_business": 30,
+    "training_dataset": 30
+  },
+  "budget_gb": 810,
+  "cost_gb": 810,
+  "feasible": true,
+  "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
+  "locked_on_split": "development",
+  "training_scenario": "S0_main",
+  "development_seed": 1001,
+  "locked_at": "2026-10-05T10:15:00+07:00"
+}

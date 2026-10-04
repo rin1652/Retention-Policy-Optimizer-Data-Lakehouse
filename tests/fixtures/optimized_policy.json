@@ -1,0 +1,17 @@
+{
+  "policy_id": "optimized-S0_main-dev1001-B810",
+  "kind": "optimized_per_profile",
+  "ttl_days": {
+    "raw_ingest": 14,
+    "curated_business": 60,
+    "training_dataset": 90
+  },
+  "budget_gb": 810,
+  "cost_gb": 760,
+  "feasible": true,
+  "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
+  "locked_on_split": "development",
+  "training_scenario": "S0_main",
+  "development_seed": 1001,
+  "locked_at": "2026-10-05T10:15:00+07:00"
+}

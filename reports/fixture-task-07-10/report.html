@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Retention evaluation fixture-task-07-10</title>
+<style>
+body{font:15px system-ui,sans-serif;max-width:1080px;margin:32px auto;padding:0 18px;color:#172033;background:#f8fafc}
+h1,h2{color:#0f172a}section{background:#fff;padding:18px;margin:16px 0;border:1px solid #dbe3ee;border-radius:10px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e2e8f0;text-align:left}th{background:#f1f5f9}
+code,pre{background:#f1f5f9;border-radius:6px}pre{padding:12px;overflow:auto}.muted{color:#64748b}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;color:#fff}.ok{background:#047857}.bad{background:#b91c1c}
+.bar-row{display:grid;grid-template-columns:220px 1fr 70px;gap:10px;align-items:center;margin:10px 0}
+.track{height:18px;background:#e2e8f0;border-radius:9px;overflow:hidden}.bar{height:100%}
+@media(max-width:700px){.bar-row{grid-template-columns:100px 1fr 60px}table{font-size:13px}}
+</style></head><body>
+<h1>Retention Policy Evaluation</h1>
+<p><strong>FIXTURE DATA - NOT EXPERIMENT RESULTS</strong></p>
+<p><span class="badge ok">valid</span></p>
+<section><h2>Th&#244;ng tin l&#7847;n ch&#7841;y</h2><p>
+<b>Run ID:</b> fixture-task-07-10<br>
+<b>Th&#7901;i gian t&#7841;o report (UTC+7):</b> 2026-10-04T17:11:14+07:00<br>
+<b>Config hash:</b> <code>daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d</code><br>
+<b>Split / scenario / seed:</b> holdout / S0_main / 2001<br>
+<b>Incident / profile:</b> 6 / 3</p>
+<p class="muted">Idealized TTL model: no infrastructure loss and H &lt;= TTL.</p></section>
+<section><h2>K&#7871;t qu&#7843; ch&#237;nh</h2><table><thead><tr><th>Policy</th><th>Tr&#7841;ng th&#225;i</th><th>Recoverable</th><th>Coverage</th><th>Cost / budget</th><th>Violations</th></tr></thead>
+<tbody><tr><td>baseline-S0_main-dev1001-B810</td><td>H&#7907;p l&#7879;</td><td>3/6</td><td>50.00%</td><td>810/810 GB</td><td>—</td></tr><tr><td>optimized-S0_main-dev1001-B810</td><td>H&#7907;p l&#7879;</td><td>5/6</td><td>83.33%</td><td>760/810 GB</td><td>—</td></tr></tbody></table><p><b>Ch&#234;nh l&#7879;ch coverage:</b> +33.33 điểm phần trăm</p><div class="bar-row"><span>baseline-S0_main-dev1001-B810</span><div class="track"><div class="bar" style="width:50.00%;background:#2563eb"></div></div><strong>50.00%</strong></div><div class="bar-row"><span>optimized-S0_main-dev1001-B810</span><div class="track"><div class="bar" style="width:83.33%;background:#059669"></div></div><strong>83.33%</strong></div></section>
+<section><h2>Coverage theo profile</h2><table><thead><tr><th>Profile</th><th>baseline-S0_main-dev1001-B810</th><th>optimized-S0_main-dev1001-B810</th></tr></thead><tbody><tr><td>curated_business</td><td>0.00%</td><td>100.00%</td></tr><tr><td>raw_ingest</td><td>75.00%</td><td>75.00%</td></tr><tr><td>training_dataset</td><td>0.00%</td><td>100.00%</td></tr></tbody></table></section>
+<section><h2>TTL</h2><pre>{
+  &quot;baseline-S0_main-dev1001-B810&quot;: {
+    &quot;raw_ingest&quot;: 30,
+    &quot;curated_business&quot;: 30,
+    &quot;training_dataset&quot;: 30
+  },
+  &quot;optimized-S0_main-dev1001-B810&quot;: {
+    &quot;raw_ingest&quot;: 14,
+    &quot;curated_business&quot;: 60,
+    &quot;training_dataset&quot;: 90
+  }
+}</pre></section>
+<section><h2>Nh&#7853;n x&#233;t LLM</h2><p><b>Tr&#7841;ng th&#225;i:</b> missing</p>
+<p>Chưa có nhận xét LLM: TASK-09 chưa cung cấp phản hồi.</p><p class="muted">Model: —</p></section>
+<section><h2>Failure case v&#224; gi&#7899;i h&#7841;n</h2><ul><li>Infrastructure loss is never recoverable without an independent backup.</li></ul></section>
+<section><h2>T&#225;i l&#7853;p</h2><p>D&#7919; li&#7879;u k&#232;m theo: <code>metrics.json</code>, <code>results.csv</code>, <code>llm_commentary.json</code>.</p></section>
+</body></html>
