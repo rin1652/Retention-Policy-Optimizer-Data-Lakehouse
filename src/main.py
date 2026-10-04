@@ -33,7 +33,7 @@ def main():
         print(f"Đã sinh {len(dev_incs)} dev incidents và {len(eval_incs)} eval incidents.")
         
         # 2. Baseline policy
-        baseline = get_baseline_policy(config, budget_gb)
+        baseline = get_baseline_policy(config, budget_gb, dev_scen, dev_seed)
         print(f"Baseline TTL: {baseline['ttl_days']}")
         
         # 3. Optimized policy (Grid Search)

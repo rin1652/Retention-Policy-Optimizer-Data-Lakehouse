@@ -6,9 +6,12 @@ from src.cost_model import check_policy
 
 VIETNAM = timezone(timedelta(hours=7))
 
-def get_baseline_policy(config, budget_gb=None):
+def get_baseline_policy(config, budget_gb=None, training_scenario=None, seed=None):
     from src.policies import uniform_baseline
-    return uniform_baseline(config, budget_gb)
+    return uniform_baseline(
+        config, budget_gb,
+        training_scenario=training_scenario, development_seed=seed,
+    )
 
 def compute_cost(ttl_vector: dict, config: dict) -> float:
     profiles = config.get("profiles", [])
