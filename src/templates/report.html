@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo Evaluator - {{ run_id }}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+        h1, h2, h3 { color: #2c3e50; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .meta-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .llm-commentary { background: #e9ecef; padding: 20px; border-left: 5px solid #007bff; border-radius: 4px; margin: 20px 0; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-valid { background: #d4edda; color: #155724; }
+        .status-invalid { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Báo cáo Evaluator: Tối ưu Data Lakehouse</h1>
+        
+        <div class="meta-info">
+            <p><strong>Run ID:</strong> {{ run_id }}</p>
+            <p><strong>Thời gian (UTC+7):</strong> {{ timestamp }}</p>
+            <p><strong>Trạng thái chung:</strong> 
+                <span class="status-badge {% if status == 'valid' %}status-valid{% else %}status-invalid{% endif %}">
+                    {{ status | upper }}
+                </span>
+            </p>
+            <p><strong>Budget GB:</strong> {{ budget_gb }}</p>
+        </div>
+
+        <div class="llm-commentary">
+            <h3>Nhận xét từ LLM ({{ llm_model }})</h3>
+            {% if llm_status == 'success' %}
+                <p>{{ llm_response | replace('\n', '<br>') }}</p>
+            {% else %}
+                <p class="error">Không có nhận xét từ LLM. Trạng thái: {{ llm_status }}. Lỗi: {{ llm_error }}</p>
+            {% endif %}
+        </div>
+
+        <h2>Kết quả so sánh Policies</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Policy ID / Loại</th>
+                    <th>Trạng thái</th>
+                    <th>Coverage (Tổng)</th>
+                    <th>Logical Coverage</th>
+                    <th>Cost (GB)</th>
+                    <th>Vi phạm Min TTL / Budget</th>
+                    <th>TTL (days)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p_id, p_metrics in policies.items() %}
+                <tr>
+                    <td>{{ p_id }}<br><small>{{ p_metrics.kind }}</small></td>
+                    <td>
+                        {% if p_metrics.budget_violations == 0 and p_metrics.min_ttl_violations == 0 %}
+                            <span class="success">Valid</span>
+                        {% else %}
+                            <span class="error">Invalid</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ "%.2f"|format(p_metrics.coverage_total * 100) }}%</strong><br><small>({{ p_metrics.recoverable }}/{{ p_metrics.total }})</small></td>
+                    <td>{{ "%.2f"|format(p_metrics.coverage_logical_only * 100) }}%</td>
+                    <td>{{ p_metrics.cost_gb }}</td>
+                    <td>{{ p_metrics.min_ttl_violations }} / {{ p_metrics.budget_violations }}</td>
+                    <td>
+                        <pre style="margin:0; font-size:11px;">{{ p_metrics.ttl_days | tojson(indent=2) }}</pre>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Coverage theo Profile</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Table ID</th>
+                    {% for p_id in policies.keys() %}
+                    <th>{{ p_id }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% set sample_policy = policies.values()|list|first %}
+                {% if sample_policy %}
+                    {% for table_id in sample_policy.coverage_by_profile.keys() %}
+                    <tr>
+                        <td>{{ table_id }}</td>
+                        {% for p_id, p_metrics in policies.items() %}
+                        <td>{{ "%.2f"|format(p_metrics.coverage_by_profile[table_id] * 100) }}%</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        
+        <h2>Chênh lệch theo cặp (Delta PP)</h2>
+        {% if paired_delta_pp %}
+            <ul>
+                {% for pair_name, delta in paired_delta_pp.items() %}
+                <li><strong>{{ pair_name }}:</strong> {{ "%.2f"|format(delta) }} điểm phần trăm</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Không có dữ liệu so sánh theo cặp.</p>
+        {% endif %}
+
+        <h2>Failure Cases (Sự cố mất dữ liệu)</h2>
+        {% if failure_cases %}
+            <ul>
+                {% for f in failure_cases %}
+                <li>{{ f }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Không có failure cases nổi bật được ghi nhận riêng.</p>
+        {% endif %}
+        
+    </div>
+</body>
+</html>
