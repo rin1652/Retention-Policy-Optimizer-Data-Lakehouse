@@ -258,6 +258,73 @@ def _policy_metrics(
     }
 
 
+def evaluate_policy(
+    config: dict[str, Any], policy: dict[str, Any], incidents: Iterable[dict[str, Any]]
+) -> dict[str, Any]:
+    """Evaluate one policy using the compact API retained by the MVP tests."""
+    if not isinstance(policy, dict):
+        raise ValueError("policy must be an object")
+    profiles = _profiles(config)
+    checked = list(incidents)
+    required = {
+        "incident_id",
+        "table_id",
+        "anchor_gap_days",
+        "detect_delay_days",
+        "response_lag_days",
+        "target_age_days",
+        "infrastructure_lost",
+    }
+    for index, incident in enumerate(checked):
+        if not isinstance(incident, dict):
+            raise ValueError(f"incident {index} must be an object")
+        missing = required - incident.keys()
+        if missing:
+            raise ValueError(f"incident {index} missing fields: {sorted(missing)}")
+        if incident["table_id"] not in profiles:
+            raise ValueError(f"unknown table_id: {incident['table_id']}")
+        if not isinstance(incident["infrastructure_lost"], bool):
+            raise ValueError("infrastructure_lost must be boolean")
+        ages = [
+            incident["anchor_gap_days"],
+            incident["detect_delay_days"],
+            incident["response_lag_days"],
+            incident["target_age_days"],
+        ]
+        if any(not _finite_number(value) or value < 0 for value in ages):
+            raise ValueError(f"incident {index} ages must be finite non-negative numbers")
+        if not math.isclose(sum(ages[:3]), ages[3], rel_tol=0, abs_tol=1e-6):
+            raise ValueError(
+                f"incident {incident['incident_id']} has H != A + D + L"
+            )
+
+    ttl = policy.get("ttl_days")
+    adapted_config = dict(config)
+    if "ttl_grid_days" not in adapted_config:
+        finite_ttls = (
+            sorted({value for value in ttl.values() if _finite_number(value)})
+            if isinstance(ttl, dict)
+            else []
+        )
+        adapted_config["ttl_grid_days"] = finite_ttls or [0]
+
+    adapted_policy = dict(policy)
+    if "cost_gb" not in adapted_policy:
+        ttl_keys_valid = isinstance(ttl, dict) and set(ttl) == set(profiles)
+        ttl_values_valid = ttl_keys_valid and all(
+            _finite_number(value) and value >= 0 for value in ttl.values()
+        )
+        adapted_policy["cost_gb"] = (
+            policy_cost(config, ttl) if ttl_values_valid else 0.0
+        )
+
+    metrics = _policy_metrics(adapted_config, checked, adapted_policy)
+    return {
+        "status": "valid" if metrics["valid"] else "invalid",
+        "metrics": metrics,
+    }
+
+
 def evaluate_pair(
     config: dict[str, Any],
     incidents: Iterable[dict[str, Any]],
