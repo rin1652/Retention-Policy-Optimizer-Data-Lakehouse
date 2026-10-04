@@ -4,6 +4,7 @@
 
 ## Tài liệu
 
+- [Bắt đầu tại đây: sơ đồ giải thích bài toán](docs/problem-overview.md)
 - [Sơ đồ luồng đơn giản và vai trò từng người](docs/workflow.md)
 - [Tóm tắt PDF và phân tích đề tài 5](docs/lakehouse-summary-topic-5.md)
 - [Kế hoạch phân công, deadline và 16 issue](docs/issue-plan.md)
