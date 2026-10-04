@@ -1,0 +1,86 @@
+{
+  "fixture_only": true,
+  "source": "hand_calculated",
+  "contract_version": "1.0",
+  "note": "Seven hand-authored boundary cases; not a generated dataset or experiment result.",
+  "budget_gb": 810,
+  "incident_labels": {
+    "F1": "development-S1_infra_loss-s1001-raw_ingest-0001",
+    "F2": "development-S1_infra_loss-s1001-raw_ingest-0002",
+    "F3": "development-S1_infra_loss-s1001-raw_ingest-0003",
+    "F4": "development-S1_infra_loss-s1001-curated_business-0001",
+    "F5": "development-S1_infra_loss-s1001-training_dataset-0001",
+    "F6": "development-S1_infra_loss-s1001-training_dataset-0002",
+    "F7": "development-S1_infra_loss-s1001-raw_ingest-0004"
+  },
+  "policies": {
+    "minimum_valid": {
+      "ttl_days": {
+        "raw_ingest": 1,
+        "curated_business": 7,
+        "training_dataset": 14
+      },
+      "cost_gb": 83,
+      "feasible": true,
+      "recoverable_incident_ids": [
+        "development-S1_infra_loss-s1001-raw_ingest-0001",
+        "development-S1_infra_loss-s1001-raw_ingest-0002",
+        "development-S1_infra_loss-s1001-curated_business-0001",
+        "development-S1_infra_loss-s1001-training_dataset-0001"
+      ],
+      "recoverable_count": 4,
+      "total_count": 7,
+      "coverage": 0.5714285714285714,
+      "logical_total_count": 6,
+      "logical_only_coverage": 0.6666666666666666
+    },
+    "uniform_baseline": {
+      "ttl_days": {
+        "raw_ingest": 30,
+        "curated_business": 30,
+        "training_dataset": 30
+      },
+      "cost_gb": 810,
+      "feasible": true,
+      "recoverable_incident_ids": [
+        "development-S1_infra_loss-s1001-raw_ingest-0001",
+        "development-S1_infra_loss-s1001-raw_ingest-0002",
+        "development-S1_infra_loss-s1001-raw_ingest-0003",
+        "development-S1_infra_loss-s1001-curated_business-0001",
+        "development-S1_infra_loss-s1001-training_dataset-0001",
+        "development-S1_infra_loss-s1001-training_dataset-0002"
+      ],
+      "recoverable_count": 6,
+      "total_count": 7,
+      "coverage": 0.8571428571428571,
+      "logical_total_count": 6,
+      "logical_only_coverage": 1.0
+    },
+    "budget_invalid": {
+      "ttl_days": {
+        "raw_ingest": 90,
+        "curated_business": 90,
+        "training_dataset": 90
+      },
+      "cost_gb": 2430,
+      "feasible": false,
+      "violations": [
+        "budget_violation"
+      ],
+      "coverage_claim_allowed": false
+    },
+    "minimum_invalid": {
+      "ttl_days": {
+        "raw_ingest": 1,
+        "curated_business": 7,
+        "training_dataset": 7
+      },
+      "cost_gb": 69,
+      "feasible": false,
+      "violations": [
+        "min_ttl_violation"
+      ],
+      "coverage_claim_allowed": false
+    }
+  }
+}

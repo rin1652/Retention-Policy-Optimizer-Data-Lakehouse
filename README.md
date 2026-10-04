@@ -4,6 +4,7 @@
 
 ## Tài liệu
 
+- [Setup Python và kiểm tra fixture](docs/setup.md) · [Nghiệm thu issue #2](docs/issue-02-review.md)
 - [Contract v1.0 — quy ước dùng chung cho code](docs/experiment-contract.md)
 - [Config chuẩn](configs/experiment.sample.json) · [Nghiệm thu issue #1](docs/issue-01-review.md)
 - [Bắt đầu tại đây: sơ đồ giải thích bài toán](docs/problem-overview.md)
@@ -29,7 +30,21 @@ Sprint đề xuất **05/10/2026, 09:00–11:00, giờ Việt Nam (UTC+7)**. Nh�
 
 Prototype dự kiến so sánh TTL chung với TTL theo profile trên development/holdout riêng. Mỗi lần chạy eval phải xuất report HTML có bảng/biểu đồ và 3–5 câu nhận xét LLM dựa trên số liệu thật.
 
-Repo hiện chứa tài liệu và issue kế hoạch; code mô phỏng, report và kết quả thực nghiệm sẽ được bổ sung theo các issue. Hướng dẫn chạy sẽ được cập nhật khi prototype hoàn thành.
+Repo đã có môi trường Python và fixture tích hợp của issue #2. Generator, optimizer, evaluator, LLM và report thực sẽ được bổ sung theo các issue tiếp theo. Fixture là dữ liệu kiểm tra thủ công, không phải kết quả thí nghiệm.
+
+## Bắt đầu chạy trên Windows
+
+Từ root repo, dùng Python 3.12:
+
+```powershell
+python -m venv .venv
+& "./.venv/Scripts/python.exe" -m pip install -r requirements.txt
+& "./.venv/Scripts/python.exe" tools/validate_experiment_contract.py
+& "./.venv/Scripts/python.exe" -m src.fixture_contract
+& "./.venv/Scripts/python.exe" -m unittest discover -s tests -v
+```
+
+Xem [setup](docs/setup.md) để biết version đã kiểm chứng, đáp án fixture và cách cài lại trong venv sạch.
 
 
 
