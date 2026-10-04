@@ -1,5 +1,7 @@
 # Experiment contract: Retention Policy Optimizer (TASK-01)
 
+> Cập nhật phạm vi 04/10/2026: [MVP](mvp-scope.md) chọn một cặp seed S0 và budget 810 GB cho demo; S1 là failure case. Các yêu cầu chạy đủ 10 seed/shift/sweep dưới đây thuộc protocol đầy đủ, để sau MVP. Profile/schema/cost/RNG/tie-break giữ nguyên. Ghi rõ các run thực sự đã chạy.
+
 Phiên bản: **1.0 — đã hoàn thiện và review kỹ thuật**. Người phụ trách: Nguyễn Đình Phúc (`rin1652`). Người kiểm tra theo phân công: Nguyễn Việt Thành; Codex thực hiện kiểm tra kỹ thuật theo yêu cầu người dùng. Không ghi nhận xác nhận thay Long hoặc Đức.
 Múi giờ mọi mốc: Asia/Ho_Chi_Minh (UTC+7). Lịch 05/10/2026 09:00 đến 09:10 là lịch tạm theo sprint 2 giờ, không phải deadline do giảng viên công bố.
 

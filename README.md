@@ -4,6 +4,7 @@
 
 ## Tài liệu
 
+- [Phạm vi MVP — việc cần làm để có demo nhanh](docs/mvp-scope.md)
 - [Setup Python và kiểm tra fixture](docs/setup.md) · [Nghiệm thu issue #2](docs/issue-02-review.md)
 - [Contract v1.0 — quy ước dùng chung cho code](docs/experiment-contract.md)
 - [Config chuẩn](configs/experiment.sample.json) · [Nghiệm thu issue #1](docs/issue-01-review.md)
@@ -29,7 +30,9 @@ Kế hoạch issue cụ thể hóa phân công hiện tại; Phúc phụ trách 
 
 Sprint đề xuất **05/10/2026, 09:00–11:00, giờ Việt Nam (UTC+7)**. Nhóm chưa xác nhận giờ bắt đầu/nộp; đây không phải deadline do giảng viên công bố.
 
-Prototype dự kiến so sánh TTL chung với TTL theo profile trên development/holdout riêng. Mỗi lần chạy eval phải xuất report HTML có bảng/biểu đồ và 3–5 câu nhận xét LLM dựa trên số liệu thật.
+Prototype dự kiến so sánh TTL chung với TTL theo profile trên development/holdout riêng. Mỗi lần chạy eval phải xuất report HTML có bảng số liệu và 3–5 câu nhận xét LLM dựa trên số liệu thật.
+ 
+MVP hiện tại chạy một cặp seed S0 (dev1001/holdout2001), budget 810 GB, 900 incident/tập và một failure case S1. HTML chỉ cần bảng và nhận xét LLM; biểu đồ, 10 seed, S2/S3, CSV và sweep budget để sau. Xem phạm vi MVP trước khi làm các issue.
 
 Repo đã có môi trường Python và fixture tích hợp của issue #2. Generator, optimizer, evaluator, LLM và report thực sẽ được bổ sung theo các issue tiếp theo. Fixture là dữ liệu kiểm tra thủ công, không phải kết quả thí nghiệm.
 
