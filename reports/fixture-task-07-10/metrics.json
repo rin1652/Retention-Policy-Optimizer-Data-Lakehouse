@@ -2,6 +2,7 @@
   "run_id": "fixture-task-07-10",
   "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
   "status": "valid",
+  "invalid_reasons": [],
   "split": "holdout",
   "scenario": "S0_main",
   "seed": 2001,
@@ -27,6 +28,7 @@
       "budget_remaining_gb": 0,
       "budget_violations": 0,
       "min_ttl_violations": 0,
+      "grid_violations": 0,
       "ttl_days": {
         "raw_ingest": 30,
         "curated_business": 30,
@@ -55,6 +57,7 @@
       "budget_remaining_gb": 50,
       "budget_violations": 0,
       "min_ttl_violations": 0,
+      "grid_violations": 0,
       "ttl_days": {
         "raw_ingest": 14,
         "curated_business": 60,
@@ -73,6 +76,7 @@
   },
   "aggregate": null,
   "failure_cases": [
-    "Infrastructure loss is never recoverable without an independent backup."
+    "Infrastructure loss is never recoverable without an independent backup.",
+    "baseline-S0_main-dev1001-B810: 2 logical incidents exceeded TTL."
   ]
 }

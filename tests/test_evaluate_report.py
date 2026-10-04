@@ -1,5 +1,8 @@
 import copy
+import csv
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -105,6 +108,92 @@ class EvaluateReportTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "H != A \\+ D \\+ L"):
             evaluate_pair(self.config, incidents, [self.baseline, self.optimized], "bad-input")
 
+    def test_invalid_policy_does_not_publish_zero_metrics(self):
+        outside_grid = copy.deepcopy(self.optimized)
+        outside_grid["ttl_days"]["raw_ingest"] = 13
+        outside_grid["cost_gb"] = 740
+        metrics = evaluate_pair(
+            self.config, self.incidents, [self.baseline, outside_grid], "outside-grid"
+        )
+        result = metrics["policies"][outside_grid["policy_id"]]
+        self.assertEqual((metrics["status"], result["grid_violations"]), ("invalid", 1))
+        self.assertIsNone(result["coverage_total"])
+        self.assertIsNone(result["recoverable"])
+
+        nonfinite = copy.deepcopy(self.optimized)
+        nonfinite["ttl_days"]["raw_ingest"] = float("nan")
+        metrics = evaluate_pair(
+            self.config, self.incidents, [self.baseline, nonfinite], "nonfinite"
+        )
+        result = metrics["policies"][nonfinite["policy_id"]]
+        self.assertIsNone(result["coverage_total"])
+        self.assertTrue(any("finite" in reason for reason in result["invalid_reasons"]))
+
+    def test_routing_and_paired_budget_are_validated(self):
+        wrong_seed = copy.deepcopy(self.optimized)
+        wrong_seed["development_seed"] = 1002
+        with self.assertRaisesRegex(ValueError, "development_seed mismatch"):
+            evaluate_pair(
+                self.config, self.incidents, [self.baseline, wrong_seed], "wrong-route"
+            )
+
+        different_budget = copy.deepcopy(self.optimized)
+        different_budget["budget_gb"] = 1200
+        metrics = evaluate_pair(
+            self.config, self.incidents, [self.baseline, different_budget], "budget-mismatch"
+        )
+        self.assertEqual(metrics["status"], "invalid")
+        for result in metrics["policies"].values():
+            self.assertIn("policies must use the same budget_gb", result["invalid_reasons"])
+
+        undeclared_baseline = copy.deepcopy(self.baseline)
+        undeclared_optimized = copy.deepcopy(self.optimized)
+        for item in (undeclared_baseline, undeclared_optimized):
+            item["budget_gb"] = 999
+        metrics = evaluate_pair(
+            self.config,
+            self.incidents,
+            [undeclared_baseline, undeclared_optimized],
+            "undeclared-budget",
+        )
+        self.assertEqual(metrics["status"], "invalid")
+        for result in metrics["policies"].values():
+            self.assertIn("policy budget_gb is not declared in config", result["invalid_reasons"])
+
+    def test_cli_writes_invalid_artifact_for_bad_config(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bad_config = root / "bad-config.json"
+            output = root / "metrics.json"
+            bad_config.write_text("{", encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "src.evaluate",
+                    "--config",
+                    str(bad_config),
+                    "--incidents",
+                    str(ROOT / "tests/fixtures/incidents.jsonl"),
+                    "--policy",
+                    str(ROOT / "tests/fixtures/baseline_policy.json"),
+                    "--policy",
+                    str(ROOT / "tests/fixtures/optimized_policy.json"),
+                    "--run-id",
+                    "bad-config",
+                    "--output",
+                    str(output),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            artifact = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(completed.returncode, 2)
+            self.assertEqual(artifact["status"], "invalid")
+            self.assertIsNone(artifact["config_hash"])
+
     def test_report_is_offline_and_never_overwrites(self):
         metrics = evaluate_pair(
             self.config, self.incidents, [self.baseline, self.optimized], "fixture-task-07-10"
@@ -115,15 +204,40 @@ class EvaluateReportTest(unittest.TestCase):
             unsafe["run_id"] = ".."
             with self.assertRaisesRegex(ValueError, "safe"):
                 write_report(unsafe, root)
-            report = write_report(metrics, root)
+
+            wrong_commentary = copy.deepcopy(metrics)
+            wrong_commentary["run_id"] = "wrong-commentary"
+            with self.assertRaisesRegex(ValueError, "run_id"):
+                write_report(
+                    wrong_commentary,
+                    root,
+                    {"status": "success", "response": "ok", "run_id": "another-run"},
+                )
+            self.assertFalse((root / "wrong-commentary").exists())
+
+            wrong_config_metrics = copy.deepcopy(metrics)
+            wrong_config_metrics["run_id"] = "wrong-config"
+            wrong_config = copy.deepcopy(self.config)
+            wrong_config["budget"]["main_gb"] = 811
+            with self.assertRaisesRegex(ValueError, "config hash"):
+                write_report(wrong_config_metrics, root, config=wrong_config)
+            self.assertFalse((root / "wrong-config").exists())
+
+            report = write_report(metrics, root, config=self.config)
             page = report.read_text(encoding="utf-8")
             self.assertIn("fixture-task-07-10", page)
             self.assertIn("FIXTURE DATA - NOT EXPERIMENT RESULTS", page)
             self.assertIn("Ch\u01b0a c\u00f3 nh\u1eadn x\u00e9t LLM", page)
+            self.assertIn("config.json", page)
             self.assertTrue((report.parent / "metrics.json").exists())
-            self.assertTrue((report.parent / "results.csv").exists())
+            self.assertTrue((report.parent / "config.json").exists())
+            with (report.parent / "results.csv").open(encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(len(rows), 2)
+            self.assertIn("coverage_logical_only", rows[0])
+            self.assertIn("grid_violations", rows[0])
             with self.assertRaises(FileExistsError):
-                write_report(metrics, root)
+                write_report(metrics, root, config=self.config)
 
 
 if __name__ == "__main__":

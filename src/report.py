@@ -10,11 +10,34 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from src.evaluate import config_hash
+
 
 UTC_PLUS_7 = timezone(timedelta(hours=7))
 
 EM_DASH = "\u2014"
 MISSING_COMMENTARY = "Ch\u01b0a c\u00f3 nh\u1eadn x\u00e9t LLM: TASK-09 ch\u01b0a cung c\u1ea5p ph\u1ea3n h\u1ed3i."
+
+
+def _validated_commentary(
+    metrics: dict[str, Any], commentary: dict[str, Any] | None
+) -> dict[str, Any]:
+    if commentary is None:
+        return {"status": "missing", "response": MISSING_COMMENTARY}
+    if not isinstance(commentary, dict):
+        raise ValueError("LLM commentary must be an object")
+    status = commentary.get("status")
+    if not isinstance(status, str) or not status:
+        raise ValueError("LLM commentary needs a non-empty status")
+    response = commentary.get("response")
+    if response is not None and not isinstance(response, str):
+        raise ValueError("LLM commentary response must be a string or null")
+    if commentary.get("run_id") not in (None, metrics.get("run_id")):
+        raise ValueError("LLM commentary run_id does not match metrics")
+    if status == "success" and not response:
+        raise ValueError("successful LLM commentary needs a response")
+    return commentary
+
 
 def _escape(value: Any) -> str:
     return html.escape(str(value))
@@ -34,23 +57,31 @@ def _bars(policies: dict[str, Any]) -> str:
             f'<div class="bar-row"><span>{_escape(policy_id)}</span>'
             f'<div class="track"><div class="bar" style="width:{width:.2f}%;'
             f'background:{colors[index % len(colors)]}"></div></div>'
-            f'<strong>{width:.2f}%</strong></div>'
+            f'<strong>{_percent(coverage)}</strong></div>'
         )
     return "".join(rows)
 
 
 def _policy_rows(policies: dict[str, Any]) -> str:
-    return "".join(
-        "<tr>"
-        f"<td>{_escape(policy_id)}</td>"
-        f"<td>{'H&#7907;p l&#7879;' if result.get('valid') else 'Kh&#244;ng h&#7907;p l&#7879;'}</td>"
-        f"<td>{result.get('recoverable', 0)}/{result.get('total', 0)}</td>"
-        f"<td>{_percent(result.get('coverage_total'))}</td>"
-        f"<td>{_escape(result.get('cost_gb'))}/{_escape(result.get('budget_gb'))} GB</td>"
-        f"<td>{_escape('; '.join(result.get('invalid_reasons', [])) or EM_DASH)}</td>"
-        "</tr>"
-        for policy_id, result in policies.items()
-    )
+    rows = []
+    for policy_id, result in policies.items():
+        recoverable = result.get("recoverable")
+        count = (
+            EM_DASH
+            if recoverable is None
+            else f"{recoverable}/{result.get('total', 0)}"
+        )
+        rows.append(
+            "<tr>"
+            f"<td>{_escape(policy_id)}</td>"
+            f"<td>{'H&#7907;p l&#7879;' if result.get('valid') else 'Kh&#244;ng h&#7907;p l&#7879;'}</td>"
+            f"<td>{count}</td>"
+            f"<td>{_percent(result.get('coverage_total'))}</td>"
+            f"<td>{_escape(result.get('cost_gb'))}/{_escape(result.get('budget_gb'))} GB</td>"
+            f"<td>{_escape('; '.join(result.get('invalid_reasons', [])) or EM_DASH)}</td>"
+            "</tr>"
+        )
+    return "".join(rows)
 
 
 def _profile_table(policies: dict[str, Any]) -> str:
@@ -73,12 +104,11 @@ def _profile_table(policies: dict[str, Any]) -> str:
     return f"<table><thead><tr><th>Profile</th>{headers}</tr></thead><tbody>{rows}</tbody></table>"
 
 
-def render_report(metrics: dict[str, Any], commentary: dict[str, Any] | None = None) -> str:
+def render_report(
+    metrics: dict[str, Any], commentary: dict[str, Any] | None = None, has_config: bool = False
+) -> str:
     policies = metrics.get("policies", {})
-    commentary = commentary or {
-        "status": "missing",
-        "response": MISSING_COMMENTARY,
-    }
+    commentary = _validated_commentary(metrics, commentary)
     paired = metrics.get("paired", {})
     delta = paired.get("delta_pp")
     delta_text = "\u2014" if delta is None else f"{delta:+.2f} \u0111i\u1ec3m ph\u1ea7n tr\u0103m"
@@ -91,6 +121,14 @@ def render_report(metrics: dict[str, Any], commentary: dict[str, Any] | None = N
         f"<li>{_escape(item)}</li>" for item in metrics.get("failure_cases", [])
     ) or "<li>Ch&#432;a ghi nh&#7853;n.</li>"
     status_class = "ok" if metrics.get("status") == "valid" else "bad"
+    invalid_reasons = "".join(
+        f"<li>{_escape(item)}</li>" for item in metrics.get("invalid_reasons", [])
+    ) or f"<li>{EM_DASH}</li>"
+    artifacts = ["metrics.json", "results.csv", "llm_commentary.json"]
+    if has_config:
+        artifacts.append("config.json")
+    artifact_text = ", ".join(f"<code>{name}</code>" for name in artifacts)
+
     generated = datetime.now(UTC_PLUS_7).isoformat(timespec="seconds")
     fixture_note = (
         "<p><strong>FIXTURE DATA - NOT EXPERIMENT RESULTS</strong></p>"
@@ -112,6 +150,7 @@ code,pre{{background:#f1f5f9;border-radius:6px}}pre{{padding:12px;overflow:auto}
 <h1>Retention Policy Evaluation</h1>
 {fixture_note}
 <p><span class="badge {status_class}">{_escape(metrics.get('status', 'unknown'))}</span></p>
+<section><h2>Validation</h2><ul>{invalid_reasons}</ul></section>
 <section><h2>Th&#244;ng tin l&#7847;n ch&#7841;y</h2><p>
 <b>Run ID:</b> {_escape(metrics.get('run_id'))}<br>
 <b>Th&#7901;i gian t&#7841;o report (UTC+7):</b> {_escape(generated)}<br>
@@ -126,42 +165,76 @@ code,pre{{background:#f1f5f9;border-radius:6px}}pre{{padding:12px;overflow:auto}
 <section><h2>Nh&#7853;n x&#233;t LLM</h2><p><b>Tr&#7841;ng th&#225;i:</b> {_escape(commentary.get('status', 'missing'))}</p>
 <p>{_escape(commentary.get('response') or MISSING_COMMENTARY)}</p><p class="muted">Model: {_escape(commentary.get('model', EM_DASH))}</p></section>
 <section><h2>Failure case v&#224; gi&#7899;i h&#7841;n</h2><ul>{failures}</ul></section>
-<section><h2>T&#225;i l&#7853;p</h2><p>D&#7919; li&#7879;u k&#232;m theo: <code>metrics.json</code>, <code>results.csv</code>, <code>llm_commentary.json</code>.</p></section>
+<section><h2>T&#225;i l&#7853;p</h2><p>D&#7919; li&#7879;u k&#232;m theo: {artifact_text}.</p></section>
 </body></html>"""
 
 
 def write_report(
-    metrics: dict[str, Any], output_root: Path, commentary: dict[str, Any] | None = None
+    metrics: dict[str, Any],
+    output_root: Path,
+    commentary: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None,
 ) -> Path:
     run_id = metrics.get("run_id")
     if not isinstance(run_id, str) or not run_id or run_id in {".", ".."} or Path(run_id).name != run_id:
         raise ValueError("run_id must be a safe, non-empty directory name")
+    commentary = _validated_commentary(metrics, commentary)
+    if config is not None:
+        if not isinstance(config, dict):
+            raise ValueError("config must be an object")
+        if config_hash(config) != metrics.get("config_hash"):
+            raise ValueError("config hash does not match metrics")
+
     run_dir = output_root / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
-    commentary = commentary or {
-        "status": "missing",
-        "response": MISSING_COMMENTARY,
-    }
     (run_dir / "metrics.json").write_text(
         json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (run_dir / "llm_commentary.json").write_text(
         json.dumps(commentary, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    if config is not None:
+        (run_dir / "config.json").write_text(
+            json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
     with (run_dir / "results.csv").open("w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.writer(handle)
         writer.writerow([
             "run_id", "split", "scenario", "seed", "policy_id", "valid",
-            "recoverable", "total", "coverage_total", "cost_gb", "budget_gb",
+            "recoverable", "total", "coverage_total", "coverage_logical_only",
+            "coverage_infra_loss", "cost_gb", "budget_gb", "budget_remaining_gb",
+            "budget_violations", "min_ttl_violations", "grid_violations",
+            "ttl_days", "coverage_by_profile", "invalid_reasons",
         ])
         for policy_id, result in metrics.get("policies", {}).items():
             writer.writerow([
-                run_id, metrics.get("split"), metrics.get("scenario"), metrics.get("seed"),
-                policy_id, result.get("valid"), result.get("recoverable"), result.get("total"),
-                result.get("coverage_total"), result.get("cost_gb"), result.get("budget_gb"),
+                run_id,
+                metrics.get("split"),
+                metrics.get("scenario"),
+                metrics.get("seed"),
+                policy_id,
+                result.get("valid"),
+                result.get("recoverable"),
+                result.get("total"),
+                result.get("coverage_total"),
+                result.get("coverage_logical_only"),
+                result.get("coverage_infra_loss"),
+                result.get("cost_gb"),
+                result.get("budget_gb"),
+                result.get("budget_remaining_gb"),
+                result.get("budget_violations"),
+                result.get("min_ttl_violations"),
+                result.get("grid_violations"),
+                json.dumps(result.get("ttl_days", {}), ensure_ascii=False, sort_keys=True),
+                json.dumps(
+                    result.get("coverage_by_profile", {}),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ),
+                "; ".join(result.get("invalid_reasons", [])),
             ])
     report_path = run_dir / "report.html"
-    report_path.write_text(render_report(metrics, commentary), encoding="utf-8")
+    report_path.write_text(render_report(metrics, commentary, config is not None), encoding="utf-8")
     return report_path
 
 
@@ -170,13 +243,17 @@ def main() -> None:
     parser.add_argument("metrics", type=Path)
     parser.add_argument("--output-root", type=Path, default=Path("reports"))
     parser.add_argument("--llm-commentary", type=Path)
+    parser.add_argument("--config", type=Path)
     args = parser.parse_args()
     metrics = json.loads(args.metrics.read_text(encoding="utf-8"))
     commentary = (
         json.loads(args.llm_commentary.read_text(encoding="utf-8"))
         if args.llm_commentary else None
     )
-    print(write_report(metrics, args.output_root, commentary))
+    config = (
+        json.loads(args.config.read_text(encoding="utf-8")) if args.config else None
+    )
+    print(write_report(metrics, args.output_root, commentary, config))
 
 
 if __name__ == "__main__":
