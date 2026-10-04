@@ -4,6 +4,8 @@
 
 ## Tài liệu
 
+- [Contract v1.0 — quy ước dùng chung cho code](docs/experiment-contract.md)
+- [Config chuẩn](configs/experiment.sample.json) · [Nghiệm thu issue #1](docs/issue-01-review.md)
 - [Bắt đầu tại đây: sơ đồ giải thích bài toán](docs/problem-overview.md)
 - [Sơ đồ luồng đơn giản và vai trò từng người](docs/workflow.md)
 - [Tóm tắt PDF và phân tích đề tài 5](docs/lakehouse-summary-topic-5.md)
@@ -28,5 +30,6 @@ Sprint đề xuất **05/10/2026, 09:00–11:00, giờ Việt Nam (UTC+7)**. Nh�
 Prototype dự kiến so sánh TTL chung với TTL theo profile trên development/holdout riêng. Mỗi lần chạy eval phải xuất report HTML có bảng/biểu đồ và 3–5 câu nhận xét LLM dựa trên số liệu thật.
 
 Repo hiện chứa tài liệu và issue kế hoạch; code mô phỏng, report và kết quả thực nghiệm sẽ được bổ sung theo các issue. Hướng dẫn chạy sẽ được cập nhật khi prototype hoàn thành.
+
 
 

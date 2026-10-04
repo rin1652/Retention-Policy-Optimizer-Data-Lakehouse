@@ -3,6 +3,10 @@
 Repo: [rin1652/Retention-Policy-Optimizer-Data-Lakehouse](https://github.com/rin1652/Retention-Policy-Optimizer-Data-Lakehouse)  
 Ngày lập: 04/10/2026. Múi giờ: **Asia/Ho_Chi_Minh (UTC+7), giờ Việt Nam**.
 
+## Contract dùng chung đã chốt
+
+Issue #1 đã được hoàn thiện kỹ thuật theo yêu cầu người dùng. Các issue triển khai dùng [contract v1.0](experiment-contract.md) và [config chuẩn](../configs/experiment.sample.json): budget chính 810 GB, table_id `raw_ingest`/`curated_business`/`training_dataset`, field `infrastructure_lost`, routing seed/scenario và run ID có UUID. Các phác thảo schema trước trong kế hoạch này phải được đối chiếu contract; khi khác nhau, contract v1.0 là nguồn dùng cho code. Xem [biên bản kiểm tra](issue-01-review.md).
+
 ## Lịch và phạm vi
 
 **Lịch đề xuất: 09:00–11:00 ngày 05/10/2026.** T0 = 09:00, deadline bộ nộp = 11:00. Đây là lịch tạm theo sprint 2 giờ trong PDF vì nhóm chưa xác nhận thời gian bắt đầu/nộp; không phải hạn nộp do giảng viên công bố. Các issue đều ghi rõ trạng thái đề xuất. Khi đổi T0, dịch đồng bộ toàn bộ mốc theo chênh lệch thời gian.
@@ -670,4 +674,5 @@ bộ nộp; checklist cuối; commit/PR và link report
 ## Nguồn yêu cầu
 
 Tóm tắt PDF và phân tích đề tài trong [lakehouse-summary-topic-5.md](lakehouse-summary-topic-5.md). Yêu cầu HTML mỗi eval và nhận xét LLM do người dùng bổ sung từ hướng dẫn của giảng viên. Mốc giờ và cấu trúc issue là đề xuất kế hoạch; chưa được giảng viên/nhóm xác nhận.
+
 
