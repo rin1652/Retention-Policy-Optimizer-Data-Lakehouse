@@ -1,0 +1,14 @@
+/* Reset default Vite styling that could interfere */
+body {
+  margin: 0;
+  display: block;
+  place-items: initial;
+  min-width: 320px;
+  min-height: 100vh;
+}
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
