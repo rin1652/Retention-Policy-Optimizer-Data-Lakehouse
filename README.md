@@ -4,6 +4,7 @@
 
 ## Tài liệu
 
+- [Sơ đồ luồng đơn giản và vai trò từng người](docs/workflow.md)
 - [Tóm tắt PDF và phân tích đề tài 5](docs/lakehouse-summary-topic-5.md)
 - [Kế hoạch phân công, deadline và 16 issue](docs/issue-plan.md)
 - [GitHub Issues](https://github.com/rin1652/Retention-Policy-Optimizer-Data-Lakehouse/issues)
@@ -26,4 +27,5 @@ Sprint đề xuất **05/10/2026, 09:00–11:00, giờ Việt Nam (UTC+7)**. Nh�
 Prototype dự kiến so sánh TTL chung với TTL theo profile trên development/holdout riêng. Mỗi lần chạy eval phải xuất report HTML có bảng/biểu đồ và 3–5 câu nhận xét LLM dựa trên số liệu thật.
 
 Repo hiện chứa tài liệu và issue kế hoạch; code mô phỏng, report và kết quả thực nghiệm sẽ được bổ sung theo các issue. Hướng dẫn chạy sẽ được cập nhật khi prototype hoàn thành.
+
 
