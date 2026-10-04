@@ -1,0 +1,1 @@
+Given the experiment metrics below, summarize the result in 3–5 sentences. Compare the optimized per-profile TTL policy with the uniform-TTL baseline. Mention RecoveryCoverage, storage cost, and any failure case. Do not invent explanations that are not supported by the metrics.
