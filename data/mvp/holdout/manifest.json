@@ -1,0 +1,117 @@
+{
+  "generator_version": "1.0",
+  "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
+  "python_version": "3.12.6",
+  "numpy_version": "2.5.3",
+  "dataset_count": 1,
+  "datasets": [
+    {
+      "split": "holdout",
+      "scenario": "S0_main",
+      "seed": 2001,
+      "count": 900,
+      "profiles": {
+        "raw_ingest": {
+          "count": 300,
+          "infrastructure_lost": 0,
+          "infra_loss_rate": 0.0,
+          "detect_delay_days": {
+            "min": 0.003859565018554445,
+            "mean": 1.3266021084169934,
+            "std_population": 1.2446656047664517,
+            "median": 1.134354313476741,
+            "p90": 2.0224587475229723,
+            "p95": 4.236969932328053,
+            "max": 6.735973828617971
+          },
+          "response_lag_days": {
+            "min": 0.0,
+            "mean": 0.0,
+            "std_population": 0.0,
+            "median": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "max": 0.0
+          },
+          "target_age_days": {
+            "min": 0.003859565018554445,
+            "mean": 1.3266021084169934,
+            "std_population": 1.2446656047664517,
+            "median": 1.134354313476741,
+            "p90": 2.0224587475229723,
+            "p95": 4.236969932328053,
+            "max": 6.735973828617971
+          }
+        },
+        "curated_business": {
+          "count": 300,
+          "infrastructure_lost": 0,
+          "infra_loss_rate": 0.0,
+          "detect_delay_days": {
+            "min": 0.007269035207990715,
+            "mean": 6.4240390853893,
+            "std_population": 6.524082017305357,
+            "median": 4.768195773136121,
+            "p90": 16.27250679221959,
+            "p95": 21.958794480978266,
+            "max": 29.87502973558187
+          },
+          "response_lag_days": {
+            "min": 0.0,
+            "mean": 0.0,
+            "std_population": 0.0,
+            "median": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "max": 0.0
+          },
+          "target_age_days": {
+            "min": 0.007269035207990715,
+            "mean": 6.4240390853893,
+            "std_population": 6.524082017305357,
+            "median": 4.768195773136121,
+            "p90": 16.27250679221959,
+            "p95": 21.958794480978266,
+            "max": 29.87502973558187
+          }
+        },
+        "training_dataset": {
+          "count": 300,
+          "infrastructure_lost": 0,
+          "infra_loss_rate": 0.0,
+          "detect_delay_days": {
+            "min": 7.20958621209712,
+            "mean": 26.977506162260635,
+            "std_population": 14.338770954046959,
+            "median": 24.85786780500547,
+            "p90": 50.27859857091241,
+            "p95": 55.06428572535611,
+            "max": 59.738156310379296
+          },
+          "response_lag_days": {
+            "min": 0.0,
+            "mean": 0.0,
+            "std_population": 0.0,
+            "median": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "max": 0.0
+          },
+          "target_age_days": {
+            "min": 7.20958621209712,
+            "mean": 26.977506162260635,
+            "std_population": 14.338770954046959,
+            "median": 24.85786780500547,
+            "p90": 50.27859857091241,
+            "p95": 55.06428572535611,
+            "max": 59.738156310379296
+          }
+        }
+      },
+      "file": "holdout-S0_main-s2001.jsonl",
+      "sha256": "34516fdec023b16fbc2d0d7ef299a763a7d7c2a63eb4c867db5ba1d18c2f4b5d"
+    }
+  ],
+  "scope": "synthetic data generation/statistics only; no recovery evaluation",
+  "total_incidents": 900
+}

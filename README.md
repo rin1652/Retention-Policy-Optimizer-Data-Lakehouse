@@ -5,6 +5,7 @@
 ## Tài liệu
 
 - [Phạm vi MVP — việc cần làm để có demo nhanh](docs/mvp-scope.md)
+- [Cost, baseline, generator và dữ liệu MVP](docs/mvp-components.md)
 - [Setup Python và kiểm tra fixture](docs/setup.md) · [Nghiệm thu issue #2](docs/issue-02-review.md)
 - [Contract v1.0 — quy ước dùng chung cho code](docs/experiment-contract.md)
 - [Config chuẩn](configs/experiment.sample.json) · [Nghiệm thu issue #1](docs/issue-01-review.md)
@@ -34,7 +35,7 @@ Prototype dự kiến so sánh TTL chung với TTL theo profile trên developmen
  
 MVP hiện tại chạy một cặp seed S0 (dev1001/holdout2001), budget 810 GB, 900 incident/tập và một failure case S1. HTML chỉ cần bảng và nhận xét LLM; biểu đồ, 10 seed, S2/S3, CSV và sweep budget để sau. Xem phạm vi MVP trước khi làm các issue.
 
-Repo đã có môi trường Python và fixture tích hợp của issue #2. Generator, optimizer, evaluator, LLM và report thực sẽ được bổ sung theo các issue tiếp theo. Fixture là dữ liệu kiểm tra thủ công, không phải kết quả thí nghiệm.
+Repo đã có fixture, cost model, baseline, generator cùng hai tập dữ liệu S0 cho MVP và evaluator Phúc bổ sung. Optimizer, pipeline eval, LLM và HTML report còn tiếp tục ở các issue tương ứng. Dữ liệu/fixture hiện có chưa phải kết quả cải thiện của phương pháp.
 
 ## Bắt đầu chạy trên Windows
 

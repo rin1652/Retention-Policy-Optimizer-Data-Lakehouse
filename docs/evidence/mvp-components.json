@@ -1,0 +1,62 @@
+{
+  "scope": "TASK-04/05/06 MVP components; no optimizer/holdout recovery evaluation/LLM report yet",
+  "actor": "Codex at user request",
+  "test_command": "./.venv/Scripts/python.exe -m unittest discover -s tests -v",
+  "test_count": 45,
+  "test_exit_code": 0,
+  "test_log": "test_budget_violation (test_evaluator.TestEvaluator.test_budget_violation) ... ok\r\ntest_h_equal_ttl (test_evaluator.TestEvaluator.test_h_equal_ttl) ... ok\r\ntest_h_greater_than_ttl (test_evaluator.TestEvaluator.test_h_greater_than_ttl) ... ok\r\ntest_h_less_than_ttl (test_evaluator.TestEvaluator.test_h_less_than_ttl) ... ok\r\ntest_infrastructure_lost (test_evaluator.TestEvaluator.test_infrastructure_lost) ... ok\r\ntest_input_validation (test_evaluator.TestEvaluator.test_input_validation) ... ok\r\ntest_age_sum_mismatch_rejected (test_fixture_contract.FixtureContractTests.test_age_sum_mismatch_rejected) ... ok\r\ntest_bad_json_reports_line_number (test_fixture_contract.FixtureContractTests.test_bad_json_reports_line_number) ... ok\r\ntest_bom_and_blank_lines_readable (test_fixture_contract.FixtureContractTests.test_bom_and_blank_lines_readable) ... ok\r\ntest_boolean_age_rejected (test_fixture_contract.FixtureContractTests.test_boolean_age_rejected) ... ok\r\ntest_boolean_seed_rejected (test_fixture_contract.FixtureContractTests.test_boolean_seed_rejected) ... ok\r\ntest_cli_rejects_invalid_fixture (test_fixture_contract.FixtureContractTests.test_cli_rejects_invalid_fixture) ... ok\r\ntest_cli_success (test_fixture_contract.FixtureContractTests.test_cli_success) ... ok\r\ntest_duplicate_id_rejected (test_fixture_contract.FixtureContractTests.test_duplicate_id_rejected) ... ok\r\ntest_empty_id_rejected (test_fixture_contract.FixtureContractTests.test_empty_id_rejected) ... ok\r\ntest_empty_input_rejected (test_fixture_contract.FixtureContractTests.test_empty_input_rejected) ... ok\r\ntest_expected_answers_are_hand_fixture_only (test_fixture_contract.FixtureContractTests.test_expected_answers_are_hand_fixture_only) ... ok\r\ntest_expected_invalid_policy_answers (test_fixture_contract.FixtureContractTests.test_expected_invalid_policy_answers) ... ok\r\ntest_expected_valid_policy_answers (test_fixture_contract.FixtureContractTests.test_expected_valid_policy_answers) ... ok\r\ntest_float64_overflow_age_rejected (test_fixture_contract.FixtureContractTests.test_float64_overflow_age_rejected) ... ok\r\ntest_ground_truth_field_rejected_in_input (test_fixture_contract.FixtureContractTests.test_ground_truth_field_rejected_in_input) ... ok\r\ntest_id_metadata_mismatch_rejected (test_fixture_contract.FixtureContractTests.test_id_metadata_mismatch_rejected) ... ok\r\ntest_infrastructure_flag_requires_boolean (test_fixture_contract.FixtureContractTests.test_infrastructure_flag_requires_boolean) ... ok\r\ntest_missing_field_rejected (test_fixture_contract.FixtureContractTests.test_missing_field_rejected) ... ok\r\ntest_negative_age_rejected (test_fixture_contract.FixtureContractTests.test_negative_age_rejected) ... ok\r\ntest_non_object_rejected (test_fixture_contract.FixtureContractTests.test_non_object_rejected) ... ok\r\ntest_nonfinite_age_rejected (test_fixture_contract.FixtureContractTests.test_nonfinite_age_rejected) ... ok\r\ntest_seed_must_belong_to_split (test_fixture_contract.FixtureContractTests.test_seed_must_belong_to_split) ... ok\r\ntest_shift_scenario_rejected_in_development (test_fixture_contract.FixtureContractTests.test_shift_scenario_rejected_in_development) ... ok\r\ntest_unknown_split_rejected (test_fixture_contract.FixtureContractTests.test_unknown_split_rejected) ... ok\r\ntest_unknown_table_rejected (test_fixture_contract.FixtureContractTests.test_unknown_table_rejected) ... ok\r\ntest_valid_fixture_covers_three_profiles (test_fixture_contract.FixtureContractTests.test_valid_fixture_covers_three_profiles) ... ok\r\ntest_bad_ttl_mappings (test_mvp_components.MVPComponents.test_bad_ttl_mappings) ... ok\r\ntest_baseline_development_metadata_only (test_mvp_components.MVPComponents.test_baseline_development_metadata_only) ... ok\r\ntest_baseline_hand_answers (test_mvp_components.MVPComponents.test_baseline_hand_answers) ... ok\r\ntest_budget_below_minimum (test_mvp_components.MVPComponents.test_budget_below_minimum) ... ok\r\ntest_existing_evaluator_matches_fixture_oracle (test_mvp_components.MVPComponents.test_existing_evaluator_matches_fixture_oracle) ... ok\r\ntest_generator_cli_preserves_old_output (test_mvp_components.MVPComponents.test_generator_cli_preserves_old_output) ... ok\r\ntest_hand_costs (test_mvp_components.MVPComponents.test_hand_costs) ... ok\r\ntest_hash_matches_contract_and_excludes_notes (test_mvp_components.MVPComponents.test_hash_matches_contract_and_excludes_notes) ... ok\r\ntest_invalid_policy_reasons (test_mvp_components.MVPComponents.test_invalid_policy_reasons) ... ok\r\ntest_invalid_requests_and_config_fail_fast (test_mvp_components.MVPComponents.test_invalid_requests_and_config_fail_fast) ... ok\r\ntest_s0_and_s1_counts_and_delay_bounds (test_mvp_components.MVPComponents.test_s0_and_s1_counts_and_delay_bounds) ... ok\r\ntest_seed_reproducibility_and_split_separation (test_mvp_components.MVPComponents.test_seed_reproducibility_and_split_separation) ... ok\r\ntest_uniform_infeasible_is_distinct_from_any_policy_feasible (test_mvp_components.MVPComponents.test_uniform_infeasible_is_distinct_from_any_policy_feasible) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 45 tests in 1.318s\r\n\r\nOK\r\n",
+  "contract": {
+    "status": "passed",
+    "check_count": 27,
+    "checks": [
+      "contract_version_1.0",
+      "three_unique_profiles",
+      "positive_cost_and_minimum",
+      "grid_sorted_unique_positive",
+      "mixture_weights_and_bounds",
+      "216_candidates_66_feasible",
+      "baseline_30_days_810_GB",
+      "fixture_cost_760_GB",
+      "fixture_budget_violation",
+      "fixture_minimum_violation",
+      "minimum_vector_cost_83_GB",
+      "budget_300_uniform_infeasible",
+      "fixture_boundary_and_infrastructure",
+      "900_incidents_and_24_infra_per_profile",
+      "disjoint_seed_sets",
+      "holdout_not_optimizer_input",
+      "scenario_routing_exact",
+      "seed_pairing_covers_all_runs",
+      "aggregate_keeps_scenarios_separate",
+      "forced_run_id_collision_preserves_old_run",
+      "uuid_and_exclusive_allocation_declared",
+      "contract_documents_810 GB",
+      "contract_documents_66 vector",
+      "contract_documents_S0 development",
+      "contract_documents_UUID4",
+      "contract_documents_evaluation_routing",
+      "contract_documents_64 ký tự"
+    ],
+    "baseline_ttl_days": 30,
+    "baseline_cost_gb": 810,
+    "feasible_vectors": 66,
+    "config_sha256": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
+    "scope": "contract/config and hand fixtures only; no recovery experiment executed"
+  },
+  "generation_results": [
+    {
+      "status": "generated",
+      "dataset_count": 1,
+      "total_incidents": 900,
+      "manifest": "data\\mvp\\development\\manifest.json",
+      "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d"
+    },
+    {
+      "status": "generated",
+      "dataset_count": 1,
+      "total_incidents": 900,
+      "manifest": "data\\mvp\\holdout\\manifest.json",
+      "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d"
+    }
+  ]
+}

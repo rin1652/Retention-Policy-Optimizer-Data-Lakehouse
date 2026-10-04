@@ -1,0 +1,26 @@
+{
+  "policy_id": "baseline-S0_main-dev1001-B810",
+  "kind": "baseline_uniform",
+  "ttl_days": {
+    "raw_ingest": 30,
+    "curated_business": 30,
+    "training_dataset": 30
+  },
+  "budget_gb": 810.0,
+  "config_hash": "daa6825ef86ac612ff0bffed9e69ec69f6a7236e3ec079f174132513af022d4d",
+  "locked_on_split": "development",
+  "training_scenario": "S0_main",
+  "development_seed": 1001,
+  "locked_at": "2026-10-04T17:39:34+07:00",
+  "selection_inputs": "config profiles/grid/budget only; no incidents",
+  "status": "valid",
+  "feasible": true,
+  "coverage_claim_allowed": true,
+  "cost_gb": 810,
+  "remaining_budget_gb": 0.0,
+  "minimum_cost_gb": 83,
+  "minimum_grid_cost_gb": 83,
+  "any_grid_policy_feasible": true,
+  "cost_kind": "extra_history_overhead",
+  "violations": []
+}
