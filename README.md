@@ -11,6 +11,7 @@
 - [Sơ đồ luồng đơn giản và vai trò từng người](docs/workflow.md)
 - [Tóm tắt PDF và phân tích đề tài 5](docs/lakehouse-summary-topic-5.md)
 - [Kế hoạch phân công, deadline và 16 issue](docs/issue-plan.md)
+- [Research notes (Delta Lake, Iceberg, LLM)](docs/research-notes.md)
 - [GitHub Issues](https://github.com/rin1652/Retention-Policy-Optimizer-Data-Lakehouse/issues)
 
 ## Nhóm
