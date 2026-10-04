@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.evaluate import config_hash, evaluate_pair, recoverable
+from src.evaluate import config_hash, evaluate_pair, evaluate_policy, recoverable
 from src.report import write_report
 
 
@@ -53,6 +53,25 @@ class EvaluateReportTest(unittest.TestCase):
         raw = [item for item in self.incidents if item["table_id"] == "raw_ingest"]
         ttl = {"raw_ingest": 1}
         self.assertEqual([recoverable(item, ttl) for item in raw], [True, True, False, False])
+
+    def test_mvp_baseline_on_holdout_dataset(self):
+        baseline = json.loads(
+            (ROOT / "data/mvp/baseline.json").read_text(encoding="utf-8")
+        )
+        incidents = [
+            json.loads(line)
+            for line in (
+                ROOT / "data/mvp/holdout/holdout-S0_main-s2001.jsonl"
+            ).read_text(encoding="utf-8").splitlines()
+            if line
+        ]
+        result = evaluate_policy(self.config, baseline, incidents)
+        metrics = result["metrics"]
+        self.assertEqual(result["status"], "valid")
+        self.assertEqual((metrics["recoverable"], metrics["total"]), (798, 900))
+        self.assertAlmostEqual(metrics["coverage_total"], 798 / 900)
+        self.assertEqual(metrics["coverage_by_profile"]["training_dataset"], 0.66)
+        self.assertEqual((metrics["cost_gb"], metrics["budget_violations"]), (810, 0))
 
     def test_paired_metrics_cost_and_profiles(self):
         metrics = evaluate_pair(
