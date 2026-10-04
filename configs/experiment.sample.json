@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "contract_version": "1.0-draft",
+    "contract_doc": "docs/experiment-contract.md",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "status": "draft_unreviewed",
+    "note": "Gia tri la gia dinh cua mo phong, khong phai cau hinh VACUUM production. Khoa truoc khi mo holdout."
+  },
+  "units": {
+    "time": "day",
+    "storage": "GB",
+    "history_cost": "GB of extra history overhead, linear model cost = sum(h_i * ttl_i)"
+  },
+  "budget": {
+    "main_gb": 810,
+    "sweep_gb": [450, 600, 810, 1200, 1620],
+    "kind": "history_overhead"
+  },
+  "ttl_grid_days": [1, 7, 14, 30, 60, 90],
+  "profiles": [
+    {
+      "table_id": "raw_ingest",
+      "history_gb_per_day": 20,
+      "min_ttl_days": 1,
+      "criticality": "medium",
+      "detect_delay_days": {
+        "kind": "mixture",
+        "components": [
+          {"weight": 0.9, "dist": "uniform", "low": 0, "high": 2},
+          {"weight": 0.1, "dist": "uniform", "low": 2, "high": 7}
+        ]
+      }
+    },
+    {
+      "table_id": "curated_business",
+      "history_gb_per_day": 5,
+      "min_ttl_days": 7,
+      "criticality": "high",
+      "detect_delay_days": {
+        "kind": "mixture",
+        "components": [
+          {"weight": 0.8, "dist": "uniform", "low": 0, "high": 7},
+          {"weight": 0.2, "dist": "uniform", "low": 7, "high": 30}
+        ]
+      }
+    },
+    {
+      "table_id": "training_dataset",
+      "history_gb_per_day": 2,
+      "min_ttl_days": 14,
+      "criticality": "high",
+      "detect_delay_days": {
+        "kind": "mixture",
+        "components": [
+          {"weight": 0.7, "dist": "uniform", "low": 7, "high": 30},
+          {"weight": 0.3, "dist": "uniform", "low": 30, "high": 60}
+        ]
+      }
+    }
+  ],
+  "version_age": {
+    "formula": "H = A + D + L",
+    "anchor_gap_days_A": {"dist": "constant", "value": 0},
+    "response_lag_days_L": {"dist": "constant", "value": 0},
+    "recoverable_rule": "not infrastructure_lost and H <= ttl_days",
+    "boundary": "inclusive"
+  },
+  "scenarios": [
+    {
+      "id": "S0_main",
+      "description": "Mo hinh ly tuong, khong mat ha tang",
+      "infra_loss_rate": 0.0,
+      "overrides": {}
+    },
+    {
+      "id": "S1_infra_loss",
+      "description": "8% incident mat ha tang, khong co backup doc lap",
+      "infra_loss_rate": 0.08,
+      "overrides": {}
+    },
+    {
+      "id": "S2_tail_shift",
+      "description": "Raw ingest co duoi delay dai hon khi chay holdout",
+      "infra_loss_rate": 0.0,
+      "overrides": {
+        "raw_ingest.detect_delay_days": {
+          "kind": "mixture",
+          "components": [
+            {"weight": 0.8, "dist": "uniform", "low": 0, "high": 2},
+            {"weight": 0.2, "dist": "uniform", "low": 2, "high": 25}
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_slow_response",
+      "description": "Doi van hanh phan ung cham sau khi phat hien",
+      "infra_loss_rate": 0.0,
+      "overrides": {
+        "version_age.response_lag_days_L": {"dist": "uniform", "low": 0, "high": 3}
+      }
+    }
+  ],
+  "splits": {
+    "development": {
+      "scenarios": ["S0_main", "S1_infra_loss"],
+      "seeds": [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010],
+      "optimizer_may_read": true
+    },
+    "holdout": {
+      "scenarios": ["S0_main", "S1_infra_loss"],
+      "seeds": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010],
+      "optimizer_may_read": false
+    },
+    "shift": {
+      "scenarios": ["S2_tail_shift", "S3_slow_response"],
+      "seeds": [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010],
+      "optimizer_may_read": false
+    }
+  },
+  "incidents_per_profile": 300,
+  "rng": {
+    "library": "numpy.random.default_rng",
+    "seed_sequence_entropy": ["seed", "scenario_index", "profile_index"]
+  },
+  "optimizer": {
+    "method": "exhaustive_grid_search",
+    "objective": "max_dev_recovery_coverage",
+    "tie_break": ["lower_cost_gb", "lexicographic_ttl_vector_in_profile_order"]
+  },
+  "baseline": {
+    "method": "uniform_ttl",
+    "rule": "largest grid TTL with ttl >= max(min_ttl_days) and sum(h_i) * ttl <= budget"
+  },
+  "run_id_format": "{YYYYMMDD}T{HHMMSS}-{split}-{config_hash8}",
+  "config_hash": {
+    "algorithm": "sha256",
+    "canonical_json": "sort_keys=true, separators=(',', ':'), excluding meta.status and meta.note",
+    "first_n_chars": 8
+  }
+}
