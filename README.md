@@ -1,55 +1,47 @@
-# Retention-Policy-Optimizer-Data-Lakehouse
+# Retention Policy Optimizer - Data Lakehouse
 
-Đề tài #5: tối ưu retention theo nhóm bảng để tăng RecoveryCoverage ở cùng ngân sách lưu trữ lịch sử.
+Dự án này là hệ thống thiết kế và tối ưu chính sách lưu giữ dữ liệu (Retention Policy) cho các nhóm bảng (profiles) trong Data Lakehouse (vd: Delta Lake, Apache Iceberg) nhằm cân bằng giữa chi phí lưu trữ (Storage Cost) và khả năng phục hồi dữ liệu khi có sự cố (Recovery Coverage).
 
-## Tài liệu
+## Bài toán & Động lực
+Một quy tắc "30 ngày" cho mọi bảng hiếm khi tối ưu.
+- **Bảng raw ingest**: Khối lượng dữ liệu cực lớn, tần suất ghi cao. Rất hiếm khi cần time travel quá vài ngày vì có thể chạy lại data pipeline gốc.
+- **Bảng training dataset / Curated**: Dữ liệu quý giá, quá trình tạo tốn kém và không dễ tái lập. Phát hiện lỗi có thể chậm (sau vài tuần model suy giảm hiệu suất mới phát hiện ra).
+=> Cần thiết lập **TTL riêng rẽ** theo từng profile bảng.
 
-- [Phạm vi MVP — việc cần làm để có demo nhanh](docs/mvp-scope.md)
-- [Cost, baseline, generator và dữ liệu MVP](docs/mvp-components.md)
-- [Setup Python và kiểm tra fixture](docs/setup.md) · [Nghiệm thu issue #2](docs/issue-02-review.md)
-- [Contract v1.0 — quy ước dùng chung cho code](docs/experiment-contract.md)
-- [Config chuẩn](configs/experiment.sample.json) · [Nghiệm thu issue #1](docs/issue-01-review.md)
-- [Bắt đầu tại đây: sơ đồ giải thích bài toán](docs/problem-overview.md)
-- [Sơ đồ luồng đơn giản và vai trò từng người](docs/workflow.md)
-- [Tóm tắt PDF và phân tích đề tài 5](docs/lakehouse-summary-topic-5.md)
-- [Kế hoạch phân công, deadline và 16 issue](docs/issue-plan.md)
-- [Research notes (Delta Lake, Iceberg, LLM)](docs/research-notes.md)
-- [GitHub Issues](https://github.com/rin1652/Retention-Policy-Optimizer-Data-Lakehouse/issues)
+## Tính năng (Features)
+- **Data Simulator** (`src/simulate.py` / `src/generator.py`): Mô phỏng hàng ngàn sự cố mất/sai lệch dữ liệu với độ trễ phát hiện (Detect Delay) được phân phối theo đặc thù từng nhóm bảng. Hỗ trợ mô phỏng mất hạ tầng (Infrastructure Loss).
+- **Policy Optimizer** (`src/policies.py`): Chạy lưới tìm kiếm toàn diện (Exhaustive Grid Search) trên tập Development để tìm bộ tham số TTL theo từng bảng mang lại Recovery Coverage cao nhất trong khi không vượt qua ngân sách Storage (Budget). 
+- **Evaluator độc lập** (`src/evaluate.py`): Đánh giá chính sách TTL trên tập Holdout/Shift. Mô hình tuân thủ quy tắc nghiêm ngặt: $H \le TTL$ và không bị Infrastructure Loss mới được tính là phục hồi thành công.
+- **HTML Reporter & LLM Commentary** (`src/report.py`, `src/llm_commentary.py`): Xuất kết quả đối chiếu giữa Baseline và Optimized kèm theo nhận xét tự động từ AI (hỗ trợ OpenAI/FPT/Gemini).
 
-## Nhóm
+## Cài đặt & Chạy thí nghiệm
 
-| Thành viên | GitHub | Phần việc |
-|---|---|---|
-| Nguyễn Đình Phúc | rin1652 | Mô hình, nghiên cứu, LLM, README/pitch |
-| Đoàn Tuấn Long | tlong1610 | Môi trường, dữ liệu, scenario, tái lập |
-| Nguyễn Việt Thành | thanhnvhust514 | Cost model, baseline, optimizer, khóa policy |
-| Đinh Ngọc Đức | dinhngocduc1311 | Evaluator, HTML report, eval, bộ nộp |
-
-Kế hoạch issue cụ thể hóa phân công hiện tại; Phúc phụ trách client LLM và Đức tích hợp vào report. Tại lúc lập kế hoạch, tài khoản Long chưa đủ điều kiện assignee của repo; người phụ trách vẫn được ghi trong 4 issue của Long.
-
-## Lịch đề xuất và đầu ra
-
-Sprint đề xuất **05/10/2026, 09:00–11:00, giờ Việt Nam (UTC+7)**. Nhóm chưa xác nhận giờ bắt đầu/nộp; đây không phải deadline do giảng viên công bố.
-
-Prototype dự kiến so sánh TTL chung với TTL theo profile trên development/holdout riêng. Mỗi lần chạy eval phải xuất report HTML có bảng số liệu và 3–5 câu nhận xét LLM dựa trên số liệu thật.
- 
-MVP hiện tại chạy một cặp seed S0 (dev1001/holdout2001), budget 810 GB, 900 incident/tập và một failure case S1. HTML chỉ cần bảng và nhận xét LLM; biểu đồ, 10 seed, S2/S3, CSV và sweep budget để sau. Xem phạm vi MVP trước khi làm các issue.
-
-Repo đã có fixture, cost model, baseline, generator cùng hai tập dữ liệu S0 cho MVP và evaluator Phúc bổ sung. Optimizer, pipeline eval, LLM và HTML report còn tiếp tục ở các issue tương ứng. Dữ liệu/fixture hiện có chưa phải kết quả cải thiện của phương pháp.
-
-## Bắt đầu chạy trên Windows
-
-Từ root repo, dùng Python 3.12:
-
-```powershell
-python -m venv .venv
-& "./.venv/Scripts/python.exe" -m pip install -r requirements.txt
-& "./.venv/Scripts/python.exe" tools/validate_experiment_contract.py
-& "./.venv/Scripts/python.exe" -m src.fixture_contract
-& "./.venv/Scripts/python.exe" -m unittest discover -s tests -v
+1. Tạo biến môi trường:
+```bash
+cp .env.example .env
+# Chỉnh sửa file .env với API Key (FPT hoặc Gemini)
 ```
 
-Xem [setup](docs/setup.md) để biết version đã kiểm chứng, đáp án fixture và cách cài lại trong venv sạch.
+2. Cài đặt thư viện:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
+3. Chạy Pipeline mô phỏng và tối ưu:
+```bash
+PYTHONPATH=. python src/main.py
+```
+> Kịch bản mặc định sử dụng 3 bảng cấu hình (`raw_ingest`, `curated_business`, `training_dataset`), tổng Storage Budget = 810GB. Baseline sử dụng TTL đồng đều cho mọi bảng (30 ngày). 
 
+4. Xem Báo cáo:
+Mở các file `reports/<run_id>/report.html` trên trình duyệt để đối chiếu biểu đồ/bảng số liệu coverage và cost.
 
+## Cấu trúc Thư mục
+- `configs/config.json` - (được đổi tên hoặc sao chép từ experiment.sample.json) File cấu hình JSON mô tả profiles, scenarios.
+- `src/` - Chứa mã nguồn mô phỏng, tối ưu và đánh giá.
+- `tests/` - Unit tests cho logic đánh giá.
+- `reports/` - Output HTML và JSON sau mỗi lần chạy.
+- `prompts/` - Mẫu prompt dùng cho LLM diễn giải.
+- `docs/` - Tài liệu research và hợp đồng thiết kế.

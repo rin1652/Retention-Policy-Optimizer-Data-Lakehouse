@@ -9,6 +9,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from src.evaluate import config_hash
 
@@ -105,7 +106,8 @@ def _profile_table(policies: dict[str, Any]) -> str:
 
 
 def render_report(
-    metrics: dict[str, Any], commentary: dict[str, Any] | None = None, has_config: bool = False
+    metrics: dict[str, Any], commentary: dict[str, Any] | None = None,
+    has_config: bool = False, has_policies: bool = False,
 ) -> str:
     policies = metrics.get("policies", {})
     commentary = _validated_commentary(metrics, commentary)
@@ -127,7 +129,12 @@ def render_report(
     artifacts = ["metrics.json", "results.csv", "llm_commentary.json"]
     if has_config:
         artifacts.append("config.json")
+    if has_policies:
+        artifacts.append("policies.json")
     artifact_text = ", ".join(f"<code>{name}</code>" for name in artifacts)
+    commentary_text = (
+        commentary.get("response") or commentary.get("error_message") or MISSING_COMMENTARY
+    )
 
     generated = datetime.now(UTC_PLUS_7).isoformat(timespec="seconds")
     fixture_note = (
@@ -163,7 +170,7 @@ code,pre{{background:#f1f5f9;border-radius:6px}}pre{{padding:12px;overflow:auto}
 <section><h2>Coverage theo profile</h2>{_profile_table(policies)}</section>
 <section><h2>TTL</h2><pre>{_escape(ttl_json)}</pre></section>
 <section><h2>Nh&#7853;n x&#233;t LLM</h2><p><b>Tr&#7841;ng th&#225;i:</b> {_escape(commentary.get('status', 'missing'))}</p>
-<p>{_escape(commentary.get('response') or MISSING_COMMENTARY)}</p><p class="muted">Model: {_escape(commentary.get('model', EM_DASH))}</p></section>
+<p>{_escape(commentary_text)}</p><p class="muted">Model: {_escape(commentary.get('model') or EM_DASH)}</p></section>
 <section><h2>Failure case v&#224; gi&#7899;i h&#7841;n</h2><ul>{failures}</ul></section>
 <section><h2>T&#225;i l&#7853;p</h2><p>D&#7919; li&#7879;u k&#232;m theo: {artifact_text}.</p></section>
 </body></html>"""
@@ -174,6 +181,7 @@ def write_report(
     output_root: Path,
     commentary: dict[str, Any] | None = None,
     config: dict[str, Any] | None = None,
+    policies: dict[str, Any] | None = None,
 ) -> Path:
     run_id = metrics.get("run_id")
     if not isinstance(run_id, str) or not run_id or run_id in {".", ".."} or Path(run_id).name != run_id:
@@ -196,6 +204,10 @@ def write_report(
     if config is not None:
         (run_dir / "config.json").write_text(
             json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+    if policies is not None:
+        (run_dir / "policies.json").write_text(
+            json.dumps(policies, ensure_ascii=False, indent=2), encoding="utf-8"
         )
     with (run_dir / "results.csv").open("w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.writer(handle)
@@ -234,8 +246,98 @@ def write_report(
                 "; ".join(result.get("invalid_reasons", [])),
             ])
     report_path = run_dir / "report.html"
-    report_path.write_text(render_report(metrics, commentary, config is not None), encoding="utf-8")
+    report_path.write_text(
+        render_report(metrics, commentary, config is not None, policies is not None), encoding="utf-8"
+    )
     return report_path
+
+
+def generate_run_id(fingerprint: str) -> str:
+    """Return a collision-resistant run ID using UTC+7 and the config hash."""
+    if not isinstance(fingerprint, str) or len(fingerprint) < 8:
+        raise ValueError("config fingerprint must contain at least 8 characters")
+    timestamp = datetime.now(UTC_PLUS_7).strftime("%Y%m%dT%H%M%S")
+    return f"{timestamp}-{fingerprint[:8]}-{uuid4().hex}"
+
+
+def export_report(
+    config: dict[str, Any],
+    metrics: dict[str, Any],
+    policies: dict[str, Any],
+    output_root: Path | str = Path("reports"),
+) -> tuple[str, str, str]:
+    """Compatibility entry point for the MVP pipeline."""
+    if not isinstance(metrics, dict) or not isinstance(policies, dict):
+        raise ValueError("metrics and policies must be objects")
+
+    fingerprint = config_hash(config)
+    base_record = json.loads(
+        json.dumps(metrics, ensure_ascii=False, allow_nan=False)
+    )
+    enriched = {}
+    for policy_id, result in base_record.get("policies", {}).items():
+        policy = policies.get(policy_id, {})
+        enriched_result = dict(result)
+        enriched_result.setdefault("kind", policy.get("kind", "unknown"))
+        enriched_result.setdefault("ttl_days", policy.get("ttl_days", {}))
+        enriched[policy_id] = enriched_result
+    base_record["policies"] = enriched
+
+    paired = dict(base_record.get("paired", {}))
+    delta = paired.get("delta_pp")
+    if isinstance(delta, dict):
+        if len(delta) != 1:
+            raise ValueError("paired.delta_pp must contain exactly one comparison")
+        paired["delta_pp"] = next(iter(delta.values()))
+    base_record["paired"] = paired
+    base_record["config_hash"] = fingerprint
+    base_record.setdefault("execution_scope", "mvp")
+    base_record.setdefault("profile_count", len(config.get("profiles", [])))
+    totals = {result.get("total") for result in enriched.values()}
+    if len(totals) == 1:
+        base_record.setdefault("incident_count", totals.pop())
+    base_record.setdefault(
+        "model_assumption",
+        "Idealized TTL model: no infrastructure loss and H <= TTL.",
+    )
+    base_record.setdefault(
+        "invalid_reasons",
+        [
+            f"{policy_id}: {reason}"
+            for policy_id, result in enriched.items()
+            for reason in result.get("invalid_reasons", [])
+        ],
+    )
+
+    for _ in range(3):
+        run_id = generate_run_id(fingerprint)
+        record = dict(base_record, run_id=run_id)
+        try:
+            from src.llm_commentary import generate_commentary
+
+            commentary = generate_commentary(record, run_id)
+            commentary["run_id"] = run_id
+        except Exception as error:
+            commentary = {
+                "run_id": run_id,
+                "model": None,
+                "provider": None,
+                "response": None,
+                "status": "error",
+                "error_message": f"{type(error).__name__}: {error}",
+            }
+        try:
+            report_path = write_report(
+                record,
+                Path(output_root),
+                commentary,
+                config,
+                policies,
+            )
+        except FileExistsError:
+            continue
+        return run_id, str(report_path), str(report_path.parent / "metrics.json")
+    raise FileExistsError("could not allocate a unique report run_id")
 
 
 def main() -> None:

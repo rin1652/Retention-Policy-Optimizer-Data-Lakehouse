@@ -4,11 +4,12 @@ import json
 import subprocess
 import sys
 import tempfile
+from unittest.mock import patch
 import unittest
 from pathlib import Path
 
 from src.evaluate import config_hash, evaluate_pair, evaluate_policy, recoverable
-from src.report import write_report
+from src.report import export_report, write_report
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -213,6 +214,32 @@ class EvaluateReportTest(unittest.TestCase):
             self.assertEqual(artifact["status"], "invalid")
             self.assertIsNone(artifact["config_hash"])
 
+    def test_export_report_writes_pipeline_artifacts(self):
+        metrics = evaluate_pair(
+            self.config, self.incidents, [self.baseline, self.optimized], "fixture-export"
+        )
+        metrics.pop("run_id")
+        policies = {
+            self.baseline["policy_id"]: self.baseline,
+            self.optimized["policy_id"]: self.optimized,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            with patch("src.llm_commentary.generate_commentary") as llm:
+                llm.return_value = {
+                    "run_id": None,
+                    "status": "success",
+                    "response": "Ket qua hop le.",
+                    "model": "test-model",
+                }
+                run_id, report_path, metrics_path = export_report(
+                    self.config, metrics, policies, Path(directory)
+                )
+            run_dir = Path(report_path).parent
+            commentary = json.loads((run_dir / "llm_commentary.json").read_text(encoding="utf-8"))
+            self.assertEqual(commentary["run_id"], run_id)
+            self.assertEqual(Path(metrics_path), run_dir / "metrics.json")
+            self.assertTrue((run_dir / "policies.json").exists())
+            self.assertTrue((run_dir / "config.json").exists())
     def test_report_is_offline_and_never_overwrites(self):
         metrics = evaluate_pair(
             self.config, self.incidents, [self.baseline, self.optimized], "fixture-task-07-10"
