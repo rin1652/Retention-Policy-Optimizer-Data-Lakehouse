@@ -1,11 +1,15 @@
 import json
 import os
+import sys
 from src.generator import generate_incidents
 from src.policies_optimizer import get_baseline_policy, optimize_policy
 from src.evaluate import evaluate_policy
 from src.report import export_report
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
     config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "experiment.sample.json")
     with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
@@ -29,7 +33,7 @@ def main():
         print(f"Đã sinh {len(dev_incs)} dev incidents và {len(eval_incs)} eval incidents.")
         
         # 2. Baseline policy
-        baseline = get_baseline_policy(config, budget_gb)
+        baseline = get_baseline_policy(config, budget_gb, dev_scen, dev_seed)
         print(f"Baseline TTL: {baseline['ttl_days']}")
         
         # 3. Optimized policy (Grid Search)
