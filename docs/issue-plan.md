@@ -81,7 +81,7 @@ Code Phúc đã có research notes, prompt và công cụ thử LLM; dùng lại
 - [ ] Trả recoverable/total/coverage và cost cho từng policy; so hai policy trên cùng incident.
 - [ ] Dùng 7 fixture đã có để kiểm tra boundary, infra-loss và policy invalid.
 
-**Đầu ra:** src/evaluator.py và test fixture.
+**Đầu ra:** src/evaluate.py (evaluator Phúc đã bổ sung) và test fixture.
 
 **Để sau:** Chưa cần CSV, aggregate nhiều seed, interval hoặc toàn bộ metric phụ.
 
